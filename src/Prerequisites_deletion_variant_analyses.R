@@ -1,6 +1,7 @@
-################################################################################
-### Calculation of deletion mismatches and generation of covariate files
-################################################################################
+###############################################################################
+### Genotype, covariate and dosage data preparations for deletion variant
+### analyses
+###############################################################################
 
 library(tidyverse)
 library(data.table)
@@ -8,62 +9,57 @@ library(janitor)
 library(survminer)
 library(Amelia)
 
-################################################################################
-# Importing clinical data and dosage files
-Clin_data_pairs <- read_csv("data/Clinical_data_pairs")
+###############################################################################
 
-Liver_dels_dosage <- read_table("data/Liver_dels_dosage.raw")
+### General information
 
-# Structure of Liver_delt_dosage file
-spec_tbl_df [1,567 × 46] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
- $ FID                  : chr [1:1567] "pseudonym1" "pseudonym2" "pseudonym3" "pseudonym4" ...
- $ IID                  : chr [1:1567] "pseudonym1" "pseudonym2" "pseudonym3" "pseudonym4" ...
- $ PAT                  : num [1:1567] 0 0 0 0 0 0 0 0 0 0 ...
- $ MAT                  : num [1:1567] 0 0 0 0 0 0 0 0 0 0 ...
- $ SEX                  : num [1:1567] 0 0 0 0 0 0 0 0 0 0 ...
- $ PHENOTYPE            : num [1:1567] -9 -9 -9 -9 -9 -9 -9 -9 -9 -9 ...
- $ chr1_15839166_C_G_G  : num [1:1567] 0 1 1 2 0 1 1 1 0 0 ...
- $ chr1_25426560_T_C_T  : num [1:1567] 1 1 1 1 0 1 1 0 2 2 ...
- $ chr1_72346221_G_T_G  : num [1:1567] 1 2 0 1 1 1 0 1 1 0 ...
- $ chr1_152618187_T_C_T : num [1:1567] 0 0 0 2 0 1 1 0 0 0 ...
- $ chr1_152786728_A_C_C : num [1:1567] 0 0 0 0 0 0 0 1 0 1 ...
- $ chr1_196854483_A_G_G : num [1:1567] 0 2 1 0 0 1 1 0 0 1 ...
- $ chr1_222193326_G_C_C : num [1:1567] 0 1 0 0 0 0 2 1 2 2 ...
- $ chr2_108606280_G_A_G : num [1:1567] 0 0 1 1 0 0 0 1 0 1 ...
- $ chr2_130195449_T_C_C : num [1:1567] 0 1 2 2 0 0 1 0 1 0 ...
- $ chr5_148177325_C_T_C : num [1:1567] 1 1 1 1 1 1 1 1 2 1 ...
- $ chr5_149896561_T_C_C : num [1:1567] 0 1 0 0 0 1 1 0 1 1 ...
- $ chr5_180934266_A_T_T : num [1:1567] 1 0 0 2 1 0 1 1 1 1 ...
- $ chr6_121480387_A_T_T : num [1:1567] 0 0 0 0 0 0 0 0 0 0 ...
- $ chr7_38365370_A_T_T  : num [1:1567] 0 1 2 1 1 0 1 1 1 1 ...
- $ chr7_100724167_T_C_C : num [1:1567] 2 0 2 1 0 1 0 0 0 1 ...
- $ chr7_101357735_A_G_G : num [1:1567] 0 0 0 1 0 1 0 2 0 1 ...
- $ chr7_158706303_A_G_G : num [1:1567] 0 0 0 0 0 1 0 0 0 0 ...
- $ chr8_6968014_C_G_G   : num [1:1567] 0 0 1 0 0 0 0 0 0 0 ...
- $ chr8_39581402_G_A_A  : num [1:1567] 0 0 1 1 0 1 1 2 2 0 ...
- $ chr9_104592374_T_G_G : num [1:1567] 0 1 0 0 0 1 0 1 0 0 ...
- $ chr9_118763272_A_G_A : num [1:1567] 2 1 0 1 1 0 0 0 0 2 ...
- $ chr10_80034407_T_C_T : num [1:1567] 0 1 0 1 0 2 1 1 2 1 ...
- $ chr10_112351444_G_A_A: num [1:1567] 1 0 0 1 0 0 1 0 1 2 ...
- $ chr10_122459759_C_G_G: num [1:1567] 1 0 0 0 0 0 1 0 1 1 ...
- $ chr11_48548630_A_G_A : num [1:1567] 0 1 0 1 1 2 0 1 1 1 ...
- $ chr11_55252994_C_T_T : num [1:1567] 0 1 0 0 0 0 0 0 0 0 ...
- $ chr11_55521460_G_A_A : num [1:1567] 1 0 0 1 1 0 0 0 1 0 ...
- $ chr12_10389146_T_G_T : num [1:1567] 0 0 0 0 0 0 0 1 0 1 ...
- $ chr13_24566498_A_G_A : num [1:1567] 0 0 0 0 2 0 0 1 0 2 ...
- $ chr14_21924807_T_C_T : num [1:1567] 1 1 1 1 0 1 0 0 2 1 ...
- $ chr14_35150610_A_G_G : num [1:1567] 0 0 0 0 0 0 1 0 0 1 ...
- $ chr14_81411038_C_T_T : num [1:1567] 0 1 0 0 1 0 0 0 0 0 ...
- $ chr16_28585563_G_A_A : num [1:1567] 1 0 1 0 0 1 2 0 0 0 ...
- $ chr16_55810697_G_T_G : num [1:1567] 0 1 1 1 0 1 1 0 1 1 ...
- $ chr17_41237071_A_G_A : num [1:1567] 1 0 1 0 0 0 0 0 1 0 ...
- $ chr17_41343914_C_G_G : num [1:1567] 1 0 1 0 0 0 0 0 0 0 ...
- $ chr19_35395758_A_C_C : num [1:1567] 0 0 0 1 1 1 0 1 0 0 ...
- $ chr19_52391192_G_A_A : num [1:1567] 0 0 1 0 0 1 1 0 1 0 ...
- $ chr19_54293995_T_C_T : num [1:1567] 1 0 1 1 1 0 0 1 0 0 ...
- $ chr19_56175525_G_A_A : num [1:1567] 1 1 0 0 1 1 0 0 0 1 ...
- 
- # Selecting covariates
+# Files provided: "missense_variants.txt", "Example_liver_cohort_wo_MHC"
+
+# Prerequisites:
+# 1. PLINK 1.90 https://www.cog-genomics.org/plink/
+# 2. Folders data, results and src
+# 3. Chromosomal genotype ped in data folder
+# 4. Deletion variants text file
+# 5. Paired clinical data file
+# 6. R_dos_pheno_dels file
+# 7. D_dos_pheno_dels file
+# 8. R_dos_pheno_dels_collision
+# 9. D_dos_pheno_dels_collision
+
+
+###############################################################################
+# Extract deletion-tagging variants from the genotype files
+system(command = paste0("plink --bfile data/Liver_cohort --extract data/Deletion_variants/Deletion_tagging_variants.txt --make-bed --out data/Deletion_variants/Liver_dels_variants"))
+
+# Import deletion-tagging variant file and the created Liver_dels_variants.bim
+# file to check, which 4 variants were not found 
+Del_tag_variants <- read_delim("data/Deletion_variants/Deletion_tagging_variants.txt", 
+                                        delim = "\t", escape_double = FALSE, 
+                                        trim_ws = TRUE)
+
+Liver_dels_variants <- read_delim("data/Deletion_variants/Liver_dels_variants.bim", 
+                                      delim = "\t", escape_double = FALSE, 
+                                      col_names = FALSE, trim_ws = TRUE)
+
+missing_variants <- anti_join(Del_tag_variants,
+                                Liver_dels_variants,
+                                by = "X2")
+# The 4 variants that were not found in the cohort are:
+# 1) chr6_32554612_T_A
+# 2) chr12_11052399_A_C
+# 3) chr14_106473508_T_C
+# 4) chr15_23460397_A_T
+
+# Creating dosage file containing 40 deletion-tagging variants
+system(command = paste0("plink --bfile data/Deletion_variants/Liver_dels_variants --recodeA --out data/Deletion_variants/Liver_dels_dosage" ))
+
+###############################################################################
+# Import clinical data and dosage files
+Clin_data_paired <- read_csv("data/Clinical_data_paired")
+
+Liver_dels_dosage <- read_table("data/Deletion_variants/Liver_dels_dosage.raw")
+
+# Select covariates
 Clin_data_covariates <- select(Clin_data_pairs, Pair_number, R_pseudo,
                               D_pseudo, R_age, D_age, R_sex, D_sex,
                               Cold_ischemia_time_minutes, AR_status,
@@ -75,7 +71,7 @@ Clin_data_covariates <- select(Clin_data_pairs, Pair_number, R_pseudo,
                               Death_status, Death_Cox_time_months,
                               LR_Cox_time)
 
-# Joining the dosage file with the covariate file
+# Join the dosage file with the covariate file
 R_dos_pheno_dels <- inner_join(Clin_data_covariates, Liver_dels_dosage,
                                by = c("R_pseudo" = "IID")) %>% 
   select(-FID, -PAT, -MAT, -SEX, -PHENOTYPE) 
@@ -154,7 +150,7 @@ R_dos_pheno_dels$rs4806152_0_1 <- recode(R_dos_pheno_dels$chr19_35395758_A_C_C, 
 # 1(0) = homozygous for major allele or heterozygous
 # 2(1) = homozygous for minor allele
 
-# So, recode 2 (homozygous for non-deletion allele) into value 1
+# So, recoding 2 (homozygous for non-deletion allele) into value 1
 # and 0 (homozygous for deletion-tag allele) into value 2
 # (the heterozygous value 1 remains the same 1)
 # for SNPs
@@ -275,7 +271,7 @@ Collision <- sapply(2:ncol(R_paired_dosage_collision),
 Collision_df <- data.frame(Pair_number=R_paired_dosage_collision$Pair_number, 
                            Collision)
 
-# Renaming the columns in genomic collision data frame
+# Rename the columns in genomic collision data frame
 # !!!NOTION !!! The renaming requires accuracy and it needs to be made sure that
 # each column actually represents the right variant !!!
 Collision_df <- rename(Collision_df, rs10927864_col = X1)
@@ -319,9 +315,16 @@ Collision_df <- rename(Collision_df, rs4806152_col = X38)
 Collision_df <- rename(Collision_df, rs6943474_col = X39)
 Collision_df <- rename(Collision_df, rs4882017_col = X40)
 
-# Match the covariate files with genomic collision result
+# Matching the covariate files with genomic collision result
 # (for both recipients and donors)
 R_dos_pheno_dels_collision <- inner_join(R_dos_pheno_dels,
                                          Collision_df, by = "Pair_number")
 D_dos_pheno_dels_collision <- inner_join(D_dos_pheno_dels,
                                          Collision_df, by = "Pair_number")
+# Writing out the data frames
+write.table(R_dos_pheno_dels_collision,
+            file = "data/Deletion_variants/R_dos_pheno_dels_collision.txt",
+            col.names = T, row.names = F, quote = F)
+write.table(D_dos_pheno_dels_collision,
+            file = "data/Deletion_variants/D_dos_pheno_dels_collision.txt",
+            col.names = T, row.names = F, quote = F)
