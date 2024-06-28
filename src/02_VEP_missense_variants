@@ -1,0 +1,60 @@
+##############################################################
+### Liver tx cohort VEP missense variants
+##############################################################
+
+### Prerequisites:
+
+# 1) https://www.ensembl.org/info/docs/tools/vep/script/vep_tutorial.html
+# 2) https://www.ensembl.org/info/docs/tools/vep/script/vep_download.html
+# 3) results/Variables_for_VEP
+
+# VEP requires: 
+#    • gcc, g++ and make 
+#    • Perl version 5.10 or above recommended (tested on 5.10, 5.14, 5.18, 5.22, 5.26) 
+#    • Perl packages: 
+#        ◦ Archive::Zip 
+#        ◦ DBD::mysql 
+#        ◦ DBI 
+
+# Check perl version	
+	perl -v
+	# v5.30.0
+
+#####################################################
+### Use git to download the ensembl-vep package
+	git clone https://github.com/Ensembl/ensembl-vep.git
+	cd ensembl-vep
+	
+#####################################################
+### Install perl modules
+ 
+Install cpanm to make installing other modules easier
+	sudo cpan App::cpanminus
+# Install Archive::Zip
+	sudo cpanm Archive::Zip
+# Install DBI
+	sudo cpanm DBI
+# Install DBD::mysql
+	sudo apt-get install libdbd-mysql-per
+# Install Bio::Root::Version
+	sudo cpanm Bio::Root::Version
+
+######################################################
+VEP installation
+
+	perl INSTALL.pl
+		# Cache files: homo_sapiens_vep_106_GRCh38
+		# No FASTA files
+		# Plugins → Y
+		# Success! 
+
+##############################################################
+# Input variables: results/Variables_for_VEP
+
+# Create a variant list with VEP containing all variants
+./vep -i 
+results/Variables_for_VEP -o results/VEP_for_all_variables --cache
+
+# Filter variants according to Consequence "missense_variant"
+./filter_vep -i 
+results/VEP_analyses/VEP_for_all_variables -o results/missense_variants.txt -filter "Consequence is missense_variant"

@@ -10,18 +10,16 @@ library(data.table)
 
 ### General information
 
-# Files provided: "missense_variants.txt", "Example_liver_cohort_wo_MHC"
-
 # Prerequisites:
 # 1. PLINK 1.90 https://www.cog-genomics.org/plink/
 # 2. Folders data, results and src
-# 3. Chromosomal genotype ped in data folder
-# 4. Chromosome genotype ped file (with excluded sex chromosomes and MHC) in 
-#    data folder
+# 3. Chromosomal genotype data in PLINK format (.bed .bim .fam) in data folder
+# 4. Chromosome genotype PLINK format (.bed .bim .fam) with excluded sex chromosomes and MHC in 
+#    data folder (EI OLE PREREQUISITE)
 # 5. Paired clincal data file
 # 6. R_covariates_mm_liver file
 # 7. MHC_region.txt file
-# 8. File "missense_variants"
+# 8. Modified "missense_variants"
 # 9. Transmembrane and secretory Uniprot protein transcripts
 # 10. Transmembrane-only Uniprot protein transcripts
 # 11. Liver-spesific Uniprot protein transcripts
