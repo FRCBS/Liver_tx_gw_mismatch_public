@@ -14,12 +14,14 @@ library(data.table)
 # 1. PLINK 1.90 https://www.cog-genomics.org/plink/
 # 2. Folders data, results and src
 # 3. Chromosomal genotype data in PLINK format (.bed .bim .fam) in data folder
-# 4. Chromosome genotype PLINK format (.bed .bim .fam) with excluded sex chromosomes and MHC in 
-#    data folder (EI OLE PREREQUISITE)
-# 5. Paired clincal data file
-# 6. R_covariates_mm_liver file
+# 4. Paired Clincal data file
+# 5. R_covariates_mm_liver file
+# 6. missense_variants.txt
 # 7. MHC_region.txt file
-# 8. Modified "missense_variants"
+# 8. "missense_FINAL.txt"
+# 9. List_of_secr_transm_variants_FINAL.txt
+
+### kirjoita miten nämä tehdään!:
 # 9. Transmembrane and secretory Uniprot protein transcripts
 # 10. Transmembrane-only Uniprot protein transcripts
 # 11. Liver-spesific Uniprot protein transcripts
