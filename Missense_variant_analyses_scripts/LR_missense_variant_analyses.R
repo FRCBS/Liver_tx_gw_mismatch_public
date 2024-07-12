@@ -57,7 +57,7 @@ R_cov_mm_liver <- fread("data/Missense_variants/R_cov_mm_liver.txt")
 ### The survival analysis: the mismatch sum association to late rejection 
 ### event
 
-# All
+# All missense variants
 LR_cox_all <- coxph(Surv(LR_Cox_time, Late_rejection_status) ~ Mm_all + 
                       R_sex + D_sex + R_age + D_age + 
                       Cold_ischemia_time_minutes +
@@ -156,7 +156,7 @@ jpeg('./results/Missense_variants/LR_Missense_variant_analyses_all_quartiles_KM.
 print(LR_all_quart_KM)
 dev.off()
 ###############################################
-## Transmembrane and secretory
+## Transmembrane and secreted
 LR_cox_trans_secr <- coxph(Surv(LR_Cox_time, 
                                 Late_rejection_status) ~ Mm_trans_secr + 
                              R_sex + D_sex + R_age + D_age + 
@@ -170,7 +170,7 @@ LR_cox_trans_secr_sum <- summary(LR_cox_trans_secr) %>% coef()
 LR_cox_trans_secr_COEF <- bind_cols(LR_cox_trans_secr_sum, 
                                     as.data.frame(exp(confint(LR_cox_trans_secr))))
 
-# Modifying the data frame
+# Edit the data frame
 LR_cox_trans_secr_COEF <- round(LR_cox_trans_secr_COEF, digits = 3)
 LR_cox_trans_secr_COEF$`HR(95%_CI)`<- paste0(LR_cox_trans_secr_COEF$`exp(coef)`,
                                              "(", LR_cox_trans_secr_COEF$`2.5 %`,
@@ -187,7 +187,7 @@ write.table(LR_cox_trans_secr_COEF,
             "./results/Missense_variants/LR_Cox_trans_secr_Mm_missense_adjusted_COEF",
             quote = F, row.names = F)
 
-## Analyzing the quartiles of the mismatch data in transmembrane and secretory
+## Analyze the quartiles of the mismatch data in transmembrane and secreted
 ## missense variants
 
 # Cox proportional hazards model for adjusted data

@@ -6,8 +6,8 @@
 
 # Prerequisites:
 # 1) Run script 04_Missense_variant_mismatches.R
-# 2) data/Missense_variants/R_covariates_mm_liver.txt
-# 3) results/Missense_variants
+  # data/Missense_variants/R_covariates_mm_liver.txt
+# 2) results/Missense_variants folder
 
 ###############################################################################
 
@@ -54,7 +54,7 @@ R_cov_mm_liver <- fread("data/Missense_variants/R_covariates_mm_liver.txt")
 
 # Cox proportional hazards model for adjusted data
 
-# All
+# All missense variants
 AR_cox_all <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_all + 
                    R_sex + D_sex + R_age + D_age + Cold_ischemia_time_minutes +
                    Eplets_total_HLAI + Eplets_total_HLAII + 
@@ -561,7 +561,6 @@ AR_quart_results <- map((AR_quart_results),
                         })
 
 AR_quart_results <- bind_rows(AR_quart_results)
-
 AR_quart_results$Bonferroni <- p.adjust(AR_quart_results[,2], 
                                         method = "bonferroni", n = 4)
 AR_quart_results$Holm <- p.adjust(AR_quart_results[,2], method = "holm", n = 4)
