@@ -20,12 +20,12 @@
 ### 1) All missensese variants
 # Match data from VEP search data/Missense_variants/missense_variants.txt
 # to your genotype data (variant IDs).
-# Create final file "data/Missense_variants/missense_final.txt" containing one column
-# listing the matched missense variant IDs
+# Create final file "data/Missense_variants/missense_final.txt" containing one 
+# column listing the matched missense variant IDs
 
 ### 2) Transmembrane and secreted proteins
-# Search transcripts for both transmembrane and secreted proteins from Uniprot database
-# https://www.uniprot.org/ using the following string:
+# Search transcripts for both transmembrane and secreted proteins from Uniprot 
+# database https://www.uniprot.org/ using the following string:
 # annotation:(type:transmem) OR locations:(location:"Secreted [SL-0243]") OR keyword:"Transmembrane [KW-0812]") AND reviewed:yes AND organism:"Homo sapiens (Human) [9606]"
 # Match the results to missense variants and your genotype data.
 # Create final file "data/Missense_variants/transm_secr_missense_variants.txt" containing one column

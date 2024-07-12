@@ -2,6 +2,14 @@
 ### Perform regression analyses
 ### Late rejection
 ###############################################################################
+### General information
+
+# Prerequisites:
+# 1. Run script 02_Deletion_variant_mismatches.R
+#    data/Deletion_variants/R_dos_pheno_dels_collision.txt
+#    data/Deletion_variants/D_dos_pheno_dels_collision.txt
+
+###############################################################################
 
 library(tidyverse)
 library(survival)
@@ -9,7 +17,7 @@ library(survminer)
 library(glue)
 
 ###############################################################################
-## Importing matched covariate genomic collision files
+## Import matched covariate genomic collision files
 R_dos_pheno_dels_collision <- read_table("data/Deletion_variants/R_dos_pheno_dels_collision.txt")
 D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_dels_collision.txt")
 
@@ -161,24 +169,3 @@ LR_cox_plots <- map((LR_cox_plot_var$variants), function(x) {
 })
 
 ################################################################################
-### Calculating percentages of deletion variant mismatches in both 'death' 
-### group and 'no death' group
-
-NO_LR_group <- subset(R_dos_pheno_dels_collision, Late_rejection_status == 0)
-LR_group <- subset(R_dos_pheno_dels_collision, Late_rejection_status == 1)
-
-# No death group
-MM_NO_LR_group <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                      function(x){
-                        AR_tabyl <- tabyl(NO_LR_group, x)
-                        return(AR_tabyl)
-                      })
-names(MM_NO_LR_group) <- names(R_dos_pheno_dels_collision[103:142])
-
-# Death group
-MM_LR_group <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                   function(x){
-                     AR_tabyl <- tabyl(LR_group, x)
-                     return(AR_tabyl)
-                   })
-names(MM_LR_group) <- names(R_dos_pheno_dels_collision[103:142])

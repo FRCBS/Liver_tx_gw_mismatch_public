@@ -59,8 +59,7 @@ dosage_transm <- fread("data/Missense_variants/Your_genotype_data_transm_missens
 dosage_liver <- fread("data/Missense_variants/Your_genotype_data_liver_missense_dosage.raw")
 
 ###############################################################################
-### Inner join imported dosage files with 'Covariate' file and remove
-### unnecessary 
+### Inner join imported dosage files with R_D_pairs
 
 # All proteins
 R_paired_dos_all <- inner_join(R_D_pairs, dosage_all,
@@ -69,19 +68,19 @@ R_paired_dos_all <- inner_join(R_D_pairs, dosage_all,
 D_paired_dos_all <- inner_join(R_D_pairs, dosage_all,
                                   by = c("D_pseudo" = "IID")) 
 # Transmembrane and secretory
-R_paired_dos_trans_secr <- inner_join(R_D_pairs, dosage_transm_secr,
+R_paired_dos_transm_secr <- inner_join(R_D_pairs, dosage_transm_secr,
                                      by = c("R_pseudo" = "IID"))
 
-D_paired_dos_trans_secr <- inner_join(R_D_pairs, dosage_trans_secr,
+D_paired_dos_transm_secr <- inner_join(R_D_pairs, dosage_transm_secr,
                                      by = c("D_pseudo" = "IID"))
 
 # Transmembrane only
-R_paired_dos_trans <- inner_join(R_D_pairs,
-                                 dosage_only_transmemb,
+R_paired_dos_transm <- inner_join(R_D_pairs,
+                                 dosage_transm,
                                  by = c("R_pseudo" = "IID"))
 
-D_paired_dos_trans <- inner_join(R_D_pairs,
-                                 dosage_only_transmemb,
+D_paired_dos_transm <- inner_join(R_D_pairs,
+                                 dosage_transm,
                                  by = c("D_pseudo" = "IID"))
 
 # Liver-related
@@ -98,62 +97,20 @@ D_paired_dos_liver <- inner_join(R_D_pairs,
 ### frames
 identical(R_paired_dos_all$Pair_number, 
           D_paired_dos_all$Pair_number)
-# TRUE
 
-identical(R_paired_dos_trans_secr$Pair_number, 
-          D_paired_dos_trans_secr$Pair_number)
-# TRUE
+identical(R_paired_dos_transm_secr$Pair_number, 
+          D_paired_dos_transm_secr$Pair_number)
 
-identical(R_paired_dos_trans$Pair_number, 
-          D_paired_dos_trans$Pair_number)
-# TRUE
+identical(R_paired_dos_transm$Pair_number, 
+          D_paired_dos_transm$Pair_number)
 
 identical(R_paired_dos_liver$Pair_number, 
           D_paired_dos_liver$Pair_number)
-# TRUE
-
-# Identify recipient-donor pairs and select pair number column
-
-# Transmembrane and secreted
-R_D_pairs_trans_secr <- inner_join(R_paired_dos_trans_secr, D_paired_dos_trans_secr,
-                                   by = "Pair_number") %>% select(Pair_number)
-
-# Select paired data
-R_pairs_dos_trans_secr <- inner_join(R_D_pairs_trans_secr, R_paired_dos_trans_secr, 
-                                         by = "Pair_number")
-
-
-D_pairs_dos_trans_secr <- inner_join(R_D_pairs_trans_secr, D_paired_dos_trans_secr, 
-                                         by = "Pair_number")
-
-# Transmembrane only
-R_D_pairs_trans <- inner_join(R_paired_dos_trans, D_paired_dos_trans,
-                                   by = "Pair_number") %>% select(Pair_number)
-
-# Select paired data
-R_pairs_dos_trans <- inner_join(R_D_pairs_trans, R_paired_dos_trans, 
-                                     by = "Pair_number")
-
-
-D_pairs_dos_trans <- inner_join(R_D_pairs_trans, D_paired_dos_trans, 
-                                     by = "Pair_number")
-
-# Liver-related
-R_D_pairs_liver <- inner_join(R_paired_dos_liver, D_paired_dos_liver,
-                              by = "Pair_number") %>% select(Pair_number)
-
-# Select paired data
-R_pairs_dos_liver <- inner_join(R_D_pairs_liver, R_paired_dos_liver, 
-                                by = "Pair_number")
-
-
-D_pairs_dos_liver <- inner_join(R_D_pairs_liver, D_paired_dos_liver, 
-                                by = "Pair_number")
 
 ###############################################################################
 ### Calculate the mismatch sums in each protein group
 
-# All
+## All proteins
 Mismatch <- function(R,D) {
   ifelse((D>0 & R==0) | (D<2 & R==2), T, F) 
 }
@@ -169,46 +126,49 @@ Mm_all_result_df <- data.frame(Pair_number=R_paired_dos_all$Pair_number,
 R_covariates_mm_all <- inner_join(Covariates, Mm_all_result_df,
                                   by = "Pair_number")
 
-# Transmembrane and secreted
-Mm_trans_secr_res <- sapply(2:ncol(R_pairs_dos_trans_secr), 
-                               function(i) {Mismatch(R_pairs_dos_trans_secr[,i], 
-                                                     D_pairs_dos_trans_secr[,i])})
+## Transmembrane and secreted
+Mm_transm_secr_res <- sapply(2:ncol(R_paired_dos_transm_secr), 
+                               function(i) {Mismatch(R_paired_dos_transm_secr[,i], 
+                                                     D_paired_dos_transm_secr[,i])})
 
-Mm_trans_secr_res_df <- data.frame(Pair_number=R_pairs_dos_trans_secr$Pair_number, 
-                                   Mm_trans_secr=rowSums(Mm_trans_secr_res))
+Mm_transm_secr_res_df <- data.frame(Pair_number=R_paired_dos_transm_secr$Pair_number, 
+                                   Mm_trans_secr=rowSums(Mm_transm_secr_res))
 
 # Match phenotype files with adjusted R/D mismatches, recipients:
-R_covariates_mm_trans_secr <- inner_join(R_covariates_mm_all, 
-                                         Mm_trans_secr_res_df,
+R_covariates_mm_transm_secr <- inner_join(R_covariates_mm_all, 
+                                         Mm_transm_secr_res_df,
                                          by = "Pair_number")
 
-# Transmembrane only
-Mm_transmemb_res <- sapply(2:ncol(R_pairs_dos_trans), 
-                                  function(i) {Mismatch(R_pairs_dos_trans[,i], 
-                                                        D_pairs_dos_trans[,i])})
+## Transmembrane only
+Mm_transm_res <- sapply(2:ncol(R_paired_dos_transm), 
+                                  function(i) {Mismatch(R_paired_dos_transm[,i], 
+                                                        D_paired_dos_transm[,i])})
 
-Mm_transmemb_res_df <- data.frame(Pair_number=R_pairs_dos_trans$Pair_number,
-                                         Mm_transmemb=rowSums(Mm_transmemb_res))
+Mm_transm_res_df <- data.frame(Pair_number=R_paired_dos_transm$Pair_number,
+                                         Mm_transmemb=rowSums(Mm_transm_res))
 
 # Match phenotype files with adjusted R/D mismatches, recipients:
-R_covariates_mm_transmemb <- inner_join(R_covariates_mm_trans_secr,
-                                            Mm_transmemb_res_df,
+R_covariates_mm_transm <- inner_join(R_covariates_mm_transm_secr,
+                                            Mm_transm_res_df,
                                             by = "Pair_number")
 
-# Liver-related
-Mm_liver_res <- sapply(2:ncol(R_pairs_dos_liver), 
-                          function(i) {Mismatch(R_pairs_dos_liver[,i], 
-                                                D_pairs_dos_liver[,i])})
+## Liver-related
+Mm_liver_res <- sapply(2:ncol(R_paired_dos_liver), 
+                          function(i) {Mismatch(R_paired_dos_liver[,i], 
+                                                D_paired_dos_liver[,i])})
 
-Mm_liver_res_df <- data.frame(Pair_number=R_pairs_dos_liver$Pair_number,
+Mm_liver_res_df <- data.frame(Pair_number=R_paired_dos_liver$Pair_number,
                                  Mm_liver=rowSums(Mm_liver_res))
 
 # Match phenotype files with adjusted R/D mismatches, recipients:
-R_covariates_mm_liver <- inner_join(R_covariates_mm_transmemb,
+R_covariates_mm_liver <- inner_join(R_covariates_mm_transm,
                                     Mm_liver_res_df,
                                     by = "Pair_number")
 
+###############################################################################
 # Write out the final data file
 write.table(R_covariates_mm_liver,
-            file = "./data/Missense_variants/R_covariates_mm_liver.txt",
+            file = "data/Missense_variants/R_covariates_mm_liver.txt",
             row.names = F, col.names = T, quote = F)
+
+###############################################################################

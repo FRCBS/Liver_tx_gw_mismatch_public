@@ -1,6 +1,14 @@
 ###############################################################################
-### Perform regression analyses
-### Acute rejection
+### Perform deletion variant analyses using adjusted Cox proportional 
+### hazards model for time to acute rejection (AR)
+###############################################################################
+### General information
+
+# Prerequisites:
+# 1. Run script 02_Deletion_variant_mismatches.R
+#    data/Deletion_variants/R_dos_pheno_dels_collision.txt
+#    data/Deletion_variants/D_dos_pheno_dels_collision.txt
+
 ###############################################################################
 
 library(tidyverse)
@@ -14,7 +22,7 @@ R_dos_pheno_dels_collision <- read_table("data/Deletion_variants/R_dos_pheno_del
 D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_dels_collision.txt")
 
 ###############################################################################
-## Analyzing the association of mismatch vs non-mismatch to acute rejection 
+## Analyze the association of mismatch vs non-mismatch to acute rejection 
 ## with adjusted cox regression analysis
 AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
                          function(x) {
@@ -37,7 +45,7 @@ AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                          })
 names(AR_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
 
-### Creating data frame of AR summary statistics for all 40 variants
+### Create data frame of AR summary statistics for all variants
 AR_stats <- map(names(AR_analysis), function(x) { 
   DATA_stat <- AR_analysis[[x]] %>% data.frame()
   DATA_stats <- DATA_stat[1,]
@@ -46,7 +54,7 @@ AR_stats <- map(names(AR_analysis), function(x) {
 names(AR_stats) <- names(AR_analysis)
 AR_stats_df <- bind_rows(AR_stats) %>% rename("variants" = "covariates")
 
-## Modifying the data frame
+## Modify the data frame
 AR_stats_df[,2:8] <- round(AR_stats_df[,2:8], digits = 3)
 AR_stats_df$`HR(95%_CI)` <- paste0(AR_stats_df$exp.coef., "(",
                                AR_stats_df$X2.5.., "-", AR_stats_df$X97.5..,
@@ -66,16 +74,16 @@ write.table(AR_stats_df,
             "results/Deletion_variants/AR_deletions_mismatch_combined_Cox_and_multiple_testing_results",
             col.names = T, row.names = F)
 
-### Cox plots
+###############################################################################
+### Cox plots and Kaplan-Meier plots
 
-## Selecting variants p < 0.05
+## Select variants p < 0.05
 AR_cox_plot_var <- filter(AR_stats_df, p_value < 0.05)
 
-## Creating new data frame  with two rows, one for each value of collision 
+## Create new data frame  with two rows, one for each value of collision 
 ## mismatch; the other covariates are fixed to their average values (if they are 
 ## continuous variables) or to their lowest level 
 ## (if they are discrete variables)
-# x <- "rs11985201_col"
 AR_cox_plots <- map((AR_cox_plot_var$variants), function(x) {
   DATA <- select(R_dos_pheno_dels_collision, x, 
                  AR_Cox_time, AR_status, 
@@ -155,15 +163,4 @@ AR_cox_plots <- map((AR_cox_plot_var$variants), function(x) {
   dev.off()
 })
 
-################################################################################
-################################################################################
-## Checking the number of recipient with rejection and mismatch for certain
-## variants
-tabyl(R_dos_pheno_dels_collision, AR_status, rs1944862_col)
-
-AR_missmatch_dist <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                         function(x){
-                           AR_tabyl <- tabyl(R_dos_pheno_dels_collision, 
-                                             AR_status, x)
-                           return(AR_tabyl)
-                           })
+###############################################################################

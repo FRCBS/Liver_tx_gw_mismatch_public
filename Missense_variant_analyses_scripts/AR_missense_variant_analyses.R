@@ -1,13 +1,13 @@
 ###############################################################################
 ### Perform missense variant analyses using adjusted Cox proportional 
-### hazards model
+### hazards model for time to acute rejection (AR)
 ###############################################################################
 ### General information
 
 # Prerequisites:
 # 1) Run script 04_Missense_variant_mismatches.R
   # data/Missense_variants/R_covariates_mm_liver.txt
-# 2) results/Missense_variants folder
+# 2) folder results/Missense_variants
 
 ###############################################################################
 
@@ -21,10 +21,11 @@ library(gtsummary)
 ## for all four protein groups 
 R_cov_mm_liver <- fread("data/Missense_variants/R_covariates_mm_liver.txt")
 
+str(R_cov_mm_liver)
 # Classes ?data.table? and 'data.frame':	666 obs. of  25 variables:
 #$ Pair_number               : int  539 540 542 543 541 544 545 546 547 548 ...
-#$ R_pseudo                  : chr  "pseudo1" "pseudo2" "pseudo3" "pseudo4" ...
-#$ D_pseudo                  : chr  "pseudo_1" "pseudo_2" "pseudo_3" "pseudo_4" ...
+#$ R_pseudo                  : chr  "R_pseudo1" "R_pseudo2" "R_pseudo3" "R_pseudo4" ...
+#$ D_pseudo                  : chr  "D_pseudo1" "D_pseudo2" "D_pseudo3" "D_pseudo4" ...
 #$ R_sex                     : int  1 1 2 1 2 1 1 1 1 2 ...
 #$ R_age                     : int  47 19 49 62 31 52 48 36 30 71 ...
 #$ D_age                     : int  55 31 73 57 20 57 50 64 49 64 ...
@@ -44,17 +45,18 @@ R_cov_mm_liver <- fread("data/Missense_variants/R_covariates_mm_liver.txt")
 #$ Death_status              : int  0 0 0 0 0 0 0 0 0 0 ...
 #$ Death_Cox_time_months     : num  86.6 85 83.6 83.6 83.6 ...
 #$ Mm_all                    : int  4782 5091 4860 4518 4647 4818 4851 5051 4909 4923 ...
-#$ Mm_trans_secr             : int  1636 1709 1627 1460 1583 1666 1629 1663 1657 1632 ...
-#$ Mm_transmemb              : int  1202 1238 1211 1058 1208 1233 1246 1226 1247 1212 ...
+#$ Mm_transm_secr             : int  1636 1709 1627 1460 1583 1666 1629 1663 1657 1632 ...
+#$ Mm_transm              : int  1202 1238 1211 1058 1208 1233 1246 1226 1247 1212 ...
 #$ Mm_liver                  : int  578 559 494 485 491 497 529 505 517 538 ...
 #- attr(*, ".internal.selfref")=<externalptr> 
 
 ###############################################################################
-### The survival analysis: the mismatch sum association to acute rejection event
+### The survival analysis: the mismatch sum association to time to acute 
+### rejection event
+
+## All proteins
 
 # Cox proportional hazards model for adjusted data
-
-# All missense variants
 AR_cox_all <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_all + 
                    R_sex + D_sex + R_age + D_age + Cold_ischemia_time_minutes +
                    Eplets_total_HLAI + Eplets_total_HLAII + 
@@ -62,6 +64,7 @@ AR_cox_all <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_all +
                    CNI_type_initial_status,
                  data = R_cov_mm_liver)
 
+# Modify Cox analysis results into data frame
 AR_cox_all_sum <- summary(AR_cox_all) %>% coef()
 AR_cox_all_COEF <- bind_cols(AR_cox_all_sum, as.data.frame(exp(confint(AR_cox_all))))
 AR_cox_all_COEF <- round(AR_cox_all_COEF, digits = 3) 
@@ -81,8 +84,10 @@ write.table(AR_cox_all_COEF,
             "./results/Missense_variants/AR_Cox_all_Mm_missense_adjusted_COEF",
             quote = F, row.names = F)
 
-# Analyze the quartiles of the mismatch data in all missense variants
-# Divide the mismatch sums into quartiles
+#######################################
+## All proteins 
+## Analyze the quartiles of the mismatch data in all missense variants
+## Divide the mismatch sums into quartiles
 quantile(R_cov_mm_liver$Mm_all)
 #      0%     25%     50%     75%    100% 
 # 4461.00 4721.00 4798.00 4871.75 5604.00 
@@ -107,10 +112,10 @@ AR_Cox_all_quartiles <- coxph(Surv(AR_Cox_time, AR_status) ~ quartile + R_sex +
                              CNI_type_initial_status,
                            data = R_cov_mm_liver)
 
+# Modify Cox analysis quartile results into data frame
 AR_Cox_all_quart_sum <- summary(AR_Cox_all_quartiles) %>% coef()
 AR_Cox_all_quart_COEF <- bind_cols(AR_Cox_all_quart_sum,
                                     as.data.frame(exp(confint(AR_Cox_all_quartiles))))
-# Edit the data frame 
 AR_Cox_all_quart_COEF <- round(AR_Cox_all_quart_COEF, digits = 3)
 AR_Cox_all_quart_COEF$`HR(95%_CI)` <- paste0(AR_Cox_all_quart_COEF$`exp(coef)`, "(",
                                        AR_Cox_all_quart_COEF$`2.5 %`, "-", 
@@ -127,7 +132,7 @@ write.table(AR_Cox_all_quart_COEF,
             "./results/Missense_variants/AR_Mm_missense_adjusted_all_quartiles_COEF_CI",
             quote = F, row.names = F)
 
-# Produce Kapplan-Meier plot with risk table for the manuscript
+## Kapplan-Meier plot with risk table for quartile data
 AR_all_quart_KM <- ggsurvplot(
   fit = survfit(Surv(AR_Cox_time, AR_status) ~ quartile, 
                 data = R_cov_mm_liver), 
@@ -145,7 +150,7 @@ AR_all_quart_KM <- ggsurvplot(
   legend = c(0.20,0.35))
 AR_all_quart_KM
 
-# The same plot with additional details written in the picture (HR and 95% CI)
+# Add HR and 95% CI
 AR_all_quart_KM$plot <- AR_all_quart_KM$plot+ 
   ggplot2::annotate("text", 
                     x = 160, y = 0.25, # x and y coordinates of the text
@@ -160,14 +165,15 @@ AR_all_quart_KM$table <- AR_all_quart_KM$table +
 
 AR_all_quart_KM
 
-jpeg('./results/Missense_variants/AR_Missense_variant_analyses_all_quartiles_KM.jpeg', 
+jpeg('results/Missense_variants/AR_Missense_variant_analyses_all_quartiles_KM.jpeg', 
      width=10, height=15, res=600, units='in')
 print(AR_all_quart_KM)
 dev.off()
 
-##############################################
+###############################################################################
+
 ## Transmembrane and secreted
-AR_cox_trans_secr <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_trans_secr + 
+AR_cox_trans_secr <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_transm_secr + 
                    R_sex + D_sex + R_age + D_age + Cold_ischemia_time_minutes +
                    Eplets_total_HLAI + Eplets_total_HLAII + 
                    Transplantation_year + Autoimmune_status + 
@@ -198,14 +204,14 @@ write.table(AR_cox_trans_secr_COEF,
 ## missense variants
 
 # Dividing the mismatch sum into quartiles
-quantile(R_cov_mm_liver$Mm_trans_secr)
+quantile(R_cov_mm_liver$Mm_transm_secr)
 #   0%  25%  50%  75% 100% 
 # 1460 1593 1629 1675 1952 
 
 # Create a new column from quartiles (1 = the lowest quartile, 2 = the second, 
 # 3 = the third, 4 = the highest quartile)
-R_cov_mm_liver$quart_t_secr <- as.integer(cut(R_cov_mm_liver$Mm_trans_secr, 
-                                              quantile(R_cov_mm_liver$Mm_trans_secr, 
+R_cov_mm_liver$quart_t_secr <- as.integer(cut(R_cov_mm_liver$Mm_transm_secr, 
+                                              quantile(R_cov_mm_liver$Mm_transm_secr, 
                                                        probs = 0:4/4), 
                                               include.lowest = TRUE))
 
@@ -282,7 +288,7 @@ dev.off()
 
 ##############################################
 ## Transmembrane only
-AR_cox_transmemb <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_transmemb + 
+AR_cox_transmemb <- coxph(Surv(AR_Cox_time, AR_status) ~ Mm_transm + 
                          R_sex + D_sex + R_age + D_age + Cold_ischemia_time_minutes +
                          Eplets_total_HLAI + Eplets_total_HLAII + 
                          Transplantation_year + Autoimmune_status + 
@@ -314,15 +320,15 @@ write.table(AR_cox_transmemb_COEF,
 ## Analyze the quartiles of the mismatch data in transmembrane missense variants
 
 # Divide the mismatch sums into quartiles
-quantile(R_cov_mm_liver$Mm_transmemb)
+quantile(R_cov_mm_liver$Mm_transm)
 #  0%  25%  50%  75% 100% 
 #1058 1177 1214 1250 1488
 
 
 # Create a new column from quartiles (1 = the lowest quartile, 2 = the second, 
 # 3 = the third, 4 = the highest quartile)
-R_cov_mm_liver$quart_transmemb <- as.integer(cut(R_cov_mm_liver$Mm_transmemb, 
-                                                 quantile(R_cov_mm_liver$Mm_transmemb, 
+R_cov_mm_liver$quart_transmemb <- as.integer(cut(R_cov_mm_liver$Mm_transm, 
+                                                 quantile(R_cov_mm_liver$Mm_transm, 
                                                           probs = 0:4/4), 
                                                  include.lowest = TRUE))
 
@@ -455,7 +461,6 @@ AR_Cox_liver_quart_COEF <- bind_cols(AR_Cox_liver_quart_sum,
                                      as.data.frame(exp(confint(AR_cox_liver_quart))))
 
 AR_Cox_liver_quart_COEF <- round(AR_Cox_liver_quart_COEF, digits = 3)
-
 AR_Cox_liver_quart_COEF$`HR(95%_CI)` <- paste0(AR_Cox_liver_quart_COEF$`exp(coef)`,
                                            "(",
                                            AR_Cox_liver_quart_COEF$`2.5 %`, "-",
@@ -526,7 +531,7 @@ AR_results <- list(AR_cox_all_COEF, AR_cox_trans_secr_COEF,
 names(AR_results) <- c("AR_cox_all_COEF", "AR_cox_trans_secr_COEF", 
                        "AR_cox_transmemb_COEF", "AR_cox_liver_COEF") 
 
-# Extract Mm covariates and p values
+# Extract mismatch covariates and p values
 AR_results <- map((AR_results),
                   function(x) {
                     DATA <- x[1,] 
@@ -545,6 +550,7 @@ write.table(AR_results,
             "results/Missense_variants/AR_Cox_Mm_mismatch_multiple_testing_results",
             quote = F, row.names = F)
 
+#######################################
 ## Mm quartiles
 # Creating combined results
 AR_quart_results <- list(AR_Cox_all_quart_COEF, AR_Cox_t_secr_quart_COEF, 
@@ -569,3 +575,4 @@ AR_quart_results$FDR <- p.adjust(AR_quart_results[,2], method = "fdr", n = 4)
 write.table(AR_quart_results, 
             "results/Missense_variants/AR_Cox_Mm_quartiles_multiple_testing_results",
             quote = F, row.names = F)
+###############################################################################
