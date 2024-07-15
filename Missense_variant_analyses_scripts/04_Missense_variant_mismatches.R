@@ -18,11 +18,11 @@ library(tidyverse)
 
 ###############################################################################
 # Import the clinical data file 
-Covariates <- read_csv("data/Your_clinical_data")
+Covariates <- read_table("data/Your_clinical_data")
 
 # Structure specification example
 str(Covariates)
-# tibble [666 × 21] (S3: tbl_df/tbl/data.frame)
+# spec_tbl_df [666 × 21] (S3: spec_tbl_df/tbl_df/tbl/data.frame)
 # $ Pair_number               : num [1:666] 539 540 542 543 541 544 545 546 547 548 ...
 # $ R_pseudo                  : chr [1:666] "R_pseudo1" "R_pseudo2" "R_pseudo3" "R_pseudo4" ...
 # $ D_pseudo                  : chr [1:666] "D_pseudo1" "D_pseudo2" "D_pseudo3" "D_pseudo4" ...
