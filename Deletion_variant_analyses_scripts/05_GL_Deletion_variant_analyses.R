@@ -1,6 +1,6 @@
 ###############################################################################
 ### Perform deletion variant analyses using adjusted Cox proportional 
-### hazards model for time to acute rejection (AR)
+### hazards model for time to graft loss (GL)
 ###############################################################################
 ### General information
 
