@@ -1,6 +1,6 @@
 ###############################################################################
-### Perform regression analyses
-### Late rejection
+### Perform deletion variant analyses using adjusted Cox proportional 
+### hazards model for time to late rejection (LR)
 ###############################################################################
 ### General information
 
@@ -22,7 +22,8 @@ R_dos_pheno_dels_collision <- read_table("data/Deletion_variants/R_dos_pheno_del
 D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_dels_collision.txt")
 
 ###############################################################################
-## Analyzing the association of mismatch vs non-mismatch to late rejection
+## Analyze the association of mismatch vs non-mismatch to late rejection 
+## with adjusted cox regression analysis
 
 LR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
                    function(x) {
@@ -48,18 +49,17 @@ LR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                    })
 names(LR_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
 
-### Creating a data frame with GL summary statistics for all 40 variants
+### Create a data frame with GL summary statistics for all variants
 LR_stats <- map(names(LR_analysis), function(x) { 
   DATA_stat <- LR_analysis[[x]] %>% data.frame()
   DATA_stats <- DATA_stat[1,]
   return(DATA_stats)
 })
 names(LR_stats) <- names(LR_analysis)
-
 LR_stats_df <- bind_rows(LR_stats) %>% rename("variants" = "covariates")
 
+## Modify the data frame
 LR_stats_df[,2:8] <- round(LR_stats_df[,2:8], digits = 3)
-
 LR_stats_df$`HR(95%_CI)` <- paste0(LR_stats_df$exp.coef., "(",
                                    LR_stats_df$X2.5.., "-", LR_stats_df$X97.5..,
                                    ")")
@@ -69,7 +69,7 @@ LR_stats_df <- rename(LR_stats_df, "HR" = exp.coef.,
                       `2.5%` = X2.5..,
                       `97.5%` = X97.5..)
 
-### Control of family-wise errors
+## Control of family-wise errors
 LR_stats_df$Bonferroni <- p.adjust(LR_stats_df[,6], method = "bonferroni", 
                                    n = 40)
 LR_stats_df$Holm <- p.adjust(LR_stats_df[,6], method = "holm", n = 40)
@@ -79,16 +79,16 @@ write.table(LR_stats_df,
             "results/Deletion_variants/LR_deletions_mismatch_combined_Cox_and_multiple_testing_results",
             col.names = T, row.names = F)
 
-### Cox plots
+###############################################################################
+### Cox plots and Kaplan-Meier plots
 
-## Selecting variants p < 0.05
+## Select variants p < 0.05
 LR_cox_plot_var <- filter(LR_stats_df, p_value < 0.05)
 
-## Creating new data frame  with two rows, one for each value of collision 
-## mismatch; the other covariates are fixed to their average values (if they are 
+## Create new data frame  with two rows, one for each value of collision 
+## mismatch; the other covariates are fixed to their average values 
 ## continuous variables) or to their lowest level 
 ## (if they are discrete variables)
-
 LR_cox_plots <- map((LR_cox_plot_var$variants), function(x) {
   DATA <- select(R_dos_pheno_dels_collision, x, 
                  LR_Cox_time, Late_rejection_status, 

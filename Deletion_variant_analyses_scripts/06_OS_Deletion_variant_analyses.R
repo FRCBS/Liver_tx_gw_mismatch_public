@@ -1,6 +1,14 @@
 ###############################################################################
-### Perform regression analyses
-### Overall survival
+### Perform deletion variant analyses using adjusted Cox proportional 
+### hazards model for time overall survival (OS)
+###############################################################################
+### General information
+
+# Prerequisites:
+# 1. Run script 02_Deletion_variant_mismatches.R
+#    data/Deletion_variants/R_dos_pheno_dels_collision.txt
+#    data/Deletion_variants/D_dos_pheno_dels_collision.txt
+
 ###############################################################################
 
 library(tidyverse)
@@ -9,13 +17,13 @@ library(survminer)
 library(glue)
 
 ###############################################################################
-## Importing matched covariate genomic collision files
+## Import matched covariate genomic collision files
 R_dos_pheno_dels_collision <- read_table("data/Deletion_variants/R_dos_pheno_dels_collision.txt")
 D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_dels_collision.txt")
 
 ###############################################################################
-## Analyzing the association of mismatch vs non-mismatch to overall survival
-## (death)
+## Analyze the association of mismatch vs non-mismatch to overall survival
+## with adjusted cox regression analysis
 OS_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
                    function(x) {
                      DATA_OS <- select(R_dos_pheno_dels_collision, x, 
@@ -41,28 +49,27 @@ OS_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                    })
 names(OS_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
 
-### Creating a data frame with GL summary statistics for all 40 variants
+## Create a data frame with GL summary statistics for all variants
 OS_stats <- map(names(OS_analysis), function(x) { 
   DATA_stat <- OS_analysis[[x]] %>% data.frame()
   DATA_stats <- DATA_stat[1,]
   return(DATA_stats)
 })
 names(OS_stats) <- names(OS_analysis)
-
 OS_stats_df <- bind_rows(OS_stats) %>% rename("variants" = "covariates")
 
+## Modify the data frame
 OS_stats_df[,2:8] <- round(OS_stats_df[,2:8], digits = 3)
 
 OS_stats_df$`HR(95%_CI)` <- paste0(OS_stats_df$exp.coef., "(",
                                    OS_stats_df$X2.5.., "-", OS_stats_df$X97.5..,
                                    ")")
-
 OS_stats_df <- rename(OS_stats_df, "HR" = exp.coef.,
                       "p_value" = Pr...z..,
                       `2.5%` = X2.5..,
                       `97.5%` = X97.5..)
 
-### Control of family-wise errors
+## Control of family-wise errors
 OS_stats_df$Bonferroni <- p.adjust(OS_stats_df[,6], method = "bonferroni", 
                                    n = 40)
 OS_stats_df$Holm <- p.adjust(OS_stats_df[,6], method = "holm", n = 40)
@@ -73,17 +80,15 @@ write.table(OS_stats_df,
             col.names = T, row.names = F)
 
 ###############################################################################
-### Cox plots
+### Cox plots and Kaplan-Meier plots
 
-## Selecting variants p < 0.05
+## Select variants p < 0.05
 OS_cox_plot_var <- filter(OS_stats_df, p_value < 0.05)
 
-## Creating new data frame  with two rows, one for each value of collision 
-## mismatch; the other covariates are fixed to their average values (if they are 
+## Create new data frame  with two rows, one for each value of collision 
+## mismatch; the other covariates are fixed to their average values 
 ## continuous variables) or to their lowest level 
 ## (if they are discrete variables)
-#x <- "rs2174926_col"
-
 OS_cox_plots <- map((OS_cox_plot_var$variants), function(x) {
   DATA <- select(R_dos_pheno_dels_collision, x, 
                  Death_status, 
@@ -166,24 +171,4 @@ OS_cox_plots <- map((OS_cox_plot_var$variants), function(x) {
   dev.off()
 })
 
-### Calculating percentages of deletion variant mismatches in both 'death' 
-### group and 'no death' group
-
-NO_OS_group <- subset(R_dos_pheno_dels_collision, Death_status == 0)
-OS_group <- subset(R_dos_pheno_dels_collision, Death_status == 1)
-
-# No death group
-MM_NO_OS_group <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                      function(x){
-                        AR_tabyl <- tabyl(NO_OS_group, x)
-                        return(AR_tabyl)
-                      })
-names(MM_NO_OS_group) <- names(R_dos_pheno_dels_collision[103:142])
-
-# Death group
-MM_OS_group <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                   function(x){
-                     AR_tabyl <- tabyl(OS_group, x)
-                     return(AR_tabyl)
-                   })
-names(MM_OS_group) <- names(R_dos_pheno_dels_collision[103:142])
+###############################################################################

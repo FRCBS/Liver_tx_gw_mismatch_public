@@ -1,6 +1,14 @@
 ###############################################################################
-### Perform regression analyses
-### Graft loss
+### Perform deletion variant analyses using adjusted Cox proportional 
+### hazards model for time to acute rejection (AR)
+###############################################################################
+### General information
+
+# Prerequisites:
+# 1. Run script 02_Deletion_variant_mismatches.R
+#    data/Deletion_variants/R_dos_pheno_dels_collision.txt
+#    data/Deletion_variants/D_dos_pheno_dels_collision.txt
+
 ###############################################################################
 
 library(tidyverse)
@@ -9,12 +17,12 @@ library(survminer)
 library(glue)
 
 ###############################################################################
-## Importing matched covariate genomic collision files
+## Import matched covariate genomic collision files
 R_dos_pheno_dels_collision <- read_table("data/Deletion_variants/R_dos_pheno_dels_collision.txt")
 D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_dels_collision.txt")
 
 ###############################################################################
-## Analyzing the association of mismatch vs non-mismatch to graft loss (without
+## ## Analyze the association of mismatch vs non-mismatch to graft loss (wo 
 ## death) with adjusted cox regression analysis
 Graft_loss_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
                            function(x) {
@@ -41,15 +49,16 @@ Graft_loss_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                            })
 names(Graft_loss_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
 
-### Creating a data frame with GL summary statistics for all 40 variants
+### Create a data frame with GL summary statistics for all variants
 GL_stats <- map(names(Graft_loss_analysis), function(x) { 
   DATA_stat <- Graft_loss_analysis[[x]] %>% data.frame()
   DATA_stats <- DATA_stat[1,]
   return(DATA_stats)
 })
 names(GL_stats) <- names(Graft_loss_analysis)
-
 GL_stats_df <- bind_rows(GL_stats) %>% rename("variants" = "covariates")
+
+## Modify the data frame
 GL_stats_df[,2:8] <- round(GL_stats_df[,2:8], digits = 3)
 GL_stats_df$`HR(95%_CI)` <- paste0(GL_stats_df$exp.coef., "(",
                                    GL_stats_df$X2.5.., "-", GL_stats_df$X97.5..,
@@ -60,7 +69,7 @@ GL_stats_df <- rename(GL_stats_df, "HR" = exp.coef.,
                       `2.5%` = X2.5..,
                       `97.5%` = X97.5..)
 
-### Control of family-wise errors
+## Control of family-wise errors
 GL_stats_df$Bonferroni <- p.adjust(GL_stats_df[,6], method = "bonferroni", 
                                    n = 40)
 GL_stats_df$Holm <- p.adjust(GL_stats_df[,6], method = "holm", n = 40)
@@ -71,17 +80,15 @@ write.table(GL_stats_df,
             col.names = T, row.names = F)
 
 ###############################################################################
-### Cox plots
+### Cox plots and Kaplan-Meier plots
 
-## Selecting variants p < 0.05
+## Select variants p < 0.05
 GL_cox_plot_var <- filter(GL_stats_df, p_value < 0.05)
 
-## Creating new data frame  with two rows, one for each value of collision 
-## mismatch; the other covariates are fixed to their average values (if they are 
+## Create new data frame  with two rows, one for each value of collision 
+## mismatch; the other covariates are fixed to their average values 
 ## continuous variables) or to their lowest level 
 ## (if they are discrete variables)
-# x <- "rs2174926_col"
-
 GL_cox_plots <- map((GL_cox_plot_var$variants), function(x) {
   DATA <- select(R_dos_pheno_dels_collision, x, 
                  Graft_loss_status, 
@@ -164,24 +171,4 @@ GL_cox_plots <- map((GL_cox_plot_var$variants), function(x) {
   dev.off()
 })
 
-### Calculating percentages of deletion variant mismatches in both 'graft loss' 
-### group and 'no graft loss' group
-
-NO_GL_group <- subset(R_dos_pheno_dels_collision, Graft_loss_status == 0)
-GL_group <- subset(R_dos_pheno_dels_collision, Graft_loss_status == 1)
-
-# No graft loss group
-MM_NO_GL_group <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                         function(x){
-                           AR_tabyl <- tabyl(NO_GL_group, x)
-                           return(AR_tabyl)
-                         })
-names(MM_NO_GL_group) <- names(R_dos_pheno_dels_collision[103:142])
-
-# Graft loss group
-MM_GL_group <- map(colnames(R_dos_pheno_dels_collision)[103:142],
-                      function(x){
-                        AR_tabyl <- tabyl(GL_group, x)
-                        return(AR_tabyl)
-                      })
-names(MM_GL_group) <- names(R_dos_pheno_dels_collision[103:142])
+###############################################################################

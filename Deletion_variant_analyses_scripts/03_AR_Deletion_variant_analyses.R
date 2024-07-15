@@ -17,12 +17,12 @@ library(survminer)
 library(glue)
 
 ###############################################################################
-## Importing matched covariate genomic collision files
+## Import matched covariate genomic collision files
 R_dos_pheno_dels_collision <- read_table("data/Deletion_variants/R_dos_pheno_dels_collision.txt")
 D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_dels_collision.txt")
 
 ###############################################################################
-## Analyze the association of mismatch vs non-mismatch to acute rejection 
+## Analyze the association of mismatch vs non-mismatch to acute rejection
 ## with adjusted cox regression analysis
 AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
                          function(x) {
@@ -45,7 +45,7 @@ AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                          })
 names(AR_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
 
-### Create data frame of AR summary statistics for all variants
+## Create data frame of AR summary statistics for all variants
 AR_stats <- map(names(AR_analysis), function(x) { 
   DATA_stat <- AR_analysis[[x]] %>% data.frame()
   DATA_stats <- DATA_stat[1,]
@@ -64,7 +64,7 @@ AR_stats_df <- rename(AR_stats_df, "HR" = exp.coef.,
                       `2.5%` = X2.5..,
                       `97.5%` = X97.5..)
 
-### Control of family-wise errors
+## Control of family-wise errors
 AR_stats_df$Bonferroni <- p.adjust(AR_stats_df[,6], method = "bonferroni", 
                                    n = 40)
 AR_stats_df$Holm <- p.adjust(AR_stats_df[,6], method = "holm", n = 40)
@@ -81,7 +81,7 @@ write.table(AR_stats_df,
 AR_cox_plot_var <- filter(AR_stats_df, p_value < 0.05)
 
 ## Create new data frame  with two rows, one for each value of collision 
-## mismatch; the other covariates are fixed to their average values (if they are 
+## mismatch; the other covariates are fixed to their average values 
 ## continuous variables) or to their lowest level 
 ## (if they are discrete variables)
 AR_cox_plots <- map((AR_cox_plot_var$variants), function(x) {
