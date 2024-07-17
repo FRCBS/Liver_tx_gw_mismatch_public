@@ -24,7 +24,7 @@ D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_del
 ###############################################################################
 ## Analyze the association of mismatch vs non-mismatch to acute rejection
 ## with adjusted cox regression analysis
-AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
+AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[102:141], 
                          function(x) {
                            DATA <- select(R_dos_pheno_dels_collision, x, 
                                           AR_Cox_time, AR_status, 
@@ -43,7 +43,7 @@ AR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                                                        "_adjusted_cox_coef_CI_deletions_mismatch"))
                            return(COEF_CI)
                          })
-names(AR_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
+names(AR_analysis) <- colnames(R_dos_pheno_dels_collision)[102:141]
 
 ## Create data frame of AR summary statistics for all variants
 AR_stats <- map(names(AR_analysis), function(x) { 

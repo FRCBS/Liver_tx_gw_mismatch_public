@@ -24,7 +24,7 @@ D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_del
 ###############################################################################
 ## ## Analyze the association of mismatch vs non-mismatch to graft loss (wo 
 ## death) with adjusted cox regression analysis
-Graft_loss_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
+Graft_loss_analysis <- map(colnames(R_dos_pheno_dels_collision)[102:141], 
                            function(x) {
                              DATA_g <- select(R_dos_pheno_dels_collision, x, 
                                               Graft_loss_status, 
@@ -47,7 +47,7 @@ Graft_loss_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                                                            "_adjusted_cox_coef_CI_deletions_mismatch"))
                              return(COEF_CI_g)
                            })
-names(Graft_loss_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
+names(Graft_loss_analysis) <- colnames(R_dos_pheno_dels_collision)[102:141]
 
 ### Create a data frame with GL summary statistics for all variants
 GL_stats <- map(names(Graft_loss_analysis), function(x) { 

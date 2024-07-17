@@ -25,7 +25,7 @@ D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_del
 ## Analyze the association of mismatch vs non-mismatch to late rejection 
 ## with adjusted cox regression analysis
 
-LR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
+LR_analysis <- map(colnames(R_dos_pheno_dels_collision)[102:141], 
                    function(x) {
                      DATA_LR <- select(R_dos_pheno_dels_collision, x, 
                                        Late_rejection_status,
@@ -47,7 +47,7 @@ LR_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                                                     "_adjusted_cox_coef_CI_deletions_mismatch"))
                      return(COEF_CI_LR)
                    })
-names(LR_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
+names(LR_analysis) <- colnames(R_dos_pheno_dels_collision)[102:141]
 
 ### Create a data frame with GL summary statistics for all variants
 LR_stats <- map(names(LR_analysis), function(x) { 

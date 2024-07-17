@@ -24,7 +24,7 @@ D_dos_pheno_dels_collision <- read_table("data/Deletion_variants/D_dos_pheno_del
 ###############################################################################
 ## Analyze the association of mismatch vs non-mismatch to overall survival
 ## with adjusted cox regression analysis
-OS_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142], 
+OS_analysis <- map(colnames(R_dos_pheno_dels_collision)[102:141], 
                    function(x) {
                      DATA_OS <- select(R_dos_pheno_dels_collision, x, 
                                        Death_status, 
@@ -47,7 +47,7 @@ OS_analysis <- map(colnames(R_dos_pheno_dels_collision)[103:142],
                                                     "_adjusted_cox_coef_CI_deletions_mismatch"))
                      return(COEF_CI_OS)
                    })
-names(OS_analysis) <- colnames(R_dos_pheno_dels_collision)[103:142]
+names(OS_analysis) <- colnames(R_dos_pheno_dels_collision)[102:141]
 
 ## Create a data frame with GL summary statistics for all variants
 OS_stats <- map(names(OS_analysis), function(x) { 
