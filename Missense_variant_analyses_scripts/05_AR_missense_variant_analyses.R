@@ -6,7 +6,7 @@
 
 # Prerequisites:
 # 1) Run script 04_Missense_variant_mismatches.R
-  # data/Missense_variants/R_covariates_mm_liver.txt
+#    data/Missense_variants/R_covariates_mm_liver.txt
 # 2) folder results/Missense_variants
 
 ###############################################################################
@@ -123,6 +123,7 @@ AR_Cox_all_quart_COEF$`HR(95%_CI)` <- paste0(AR_Cox_all_quart_COEF$`exp(coef)`, 
                                        AR_Cox_all_quart_COEF$`2.5 %`, "-", 
                                        AR_Cox_all_quart_COEF$`97.5 %`,
                                        ")")
+
 AR_Cox_all_quart_COEF <- rename(AR_Cox_all_quart_COEF, `p_value` = `Pr(>|z|)`,
                                 `HR` = `exp(coef)`,
                                 `2.5_%`= `2.5 %`,
@@ -193,6 +194,7 @@ AR_cox_trans_secr_COEF$`HR(95%_CI)`<- paste0(AR_cox_trans_secr_COEF$`exp(coef)`,
                                          "(",  AR_cox_trans_secr_COEF$`2.5 %`, 
                                          "-", AR_cox_trans_secr_COEF$`97.5 %`,
                                          ")") 
+
 AR_cox_trans_secr_COEF <- rename(AR_cox_trans_secr_COEF, `p_value` = `Pr(>|z|)`,
                           `HR` = `exp(coef)`,
                           `2.5_%`= `2.5 %`,
@@ -237,7 +239,6 @@ AR_Cox_t_secr_quart_COEF <- bind_cols(AR_Cox_t_secr_quart_sum,
 
 # Modify Cox analysis quartile results into data frame
 AR_Cox_t_secr_quart_COEF <- round(AR_Cox_t_secr_quart_COEF, digits = 3)
-
 AR_Cox_t_secr_quart_COEF$`HR(95%_CI)` <- paste0(AR_Cox_t_secr_quart_COEF$`exp(coef)`,
                                                 "(", 
                                             AR_Cox_t_secr_quart_COEF$`2.5 %`,

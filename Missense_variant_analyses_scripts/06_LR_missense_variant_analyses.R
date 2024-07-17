@@ -5,9 +5,9 @@
 ### General information
 
 # Prerequisites:
-# 1) Run script AR_missense_variant_analyses.R
-# 2) data/Missense_variants/R_covariates_mm_liver.txt
-# 3) results/Missense_variants
+# 1) Run script 05_AR_missense_variant_analyses.R
+#    data/Missense_variants/R_cov_mm_liver.txt
+# 2) results/Missense_variants
 
 ###############################################################################
 
@@ -22,7 +22,7 @@ library(gtsummary)
 R_cov_mm_liver <- fread("data/Missense_variants/R_cov_mm_liver.txt")
 
 str(R_cov_mm_liver)
-# Classes ?data.table? and 'data.frame':	666 obs. of  25 variables:
+# Classes ‘data.table’ and 'data.frame':	666 obs. of  29 variables:
 #$ Pair_number               : int  539 540 542 543 541 544 545 546 547 548 ...
 #$ R_pseudo                  : chr  "pseudo1" "pseudo2" "pseudo3" "pseudo4" ...
 #$ D_pseudo                  : chr  "pseudo_1" "pseudo_2" "pseudo_3" "pseudo_4" ...
@@ -45,8 +45,8 @@ str(R_cov_mm_liver)
 #$ Death_status              : int  0 0 0 0 0 0 0 0 0 0 ...
 #$ Death_Cox_time_months     : num  86.6 85 83.6 83.6 83.6 ...
 #$ Mm_all                    : int  4782 5091 4860 4518 4647 4818 4851 5051 4909 4923 ...
-#$ Mm_trans_secr             : int  1636 1709 1627 1460 1583 1666 1629 1663 1657 1632 ...
-#$ Mm_transmemb              : int  1202 1238 1211 1058 1208 1233 1246 1226 1247 1212 ...
+#$ Mm_transm_secr             : int  1636 1709 1627 1460 1583 1666 1629 1663 1657 1632 ...
+#$ Mm_transm              : int  1202 1238 1211 1058 1208 1233 1246 1226 1247 1212 ...
 #$ Mm_liver                  : int  578 559 494 485 491 497 529 505 517 538 ...
 #$ quartile                  : int  2 4 3 1 1 3 3 4 4 4 ...
 #$ quart_t_secr              : int  3 4 2 1 1 3 2 3 3 3 ...
@@ -168,7 +168,7 @@ dev.off()
 
 # Cox proportional hazards model for adjusted data
 LR_cox_trans_secr <- coxph(Surv(LR_Cox_time, 
-                                Late_rejection_status) ~ Mm_trans_secr + 
+                                Late_rejection_status) ~ Mm_transm_secr + 
                              R_sex + D_sex + R_age + D_age + 
                              Cold_ischemia_time_minutes +
                              Eplets_total_HLAI + Eplets_total_HLAII + 
@@ -278,7 +278,7 @@ dev.off()
 
 # Cox proportional hazards model for adjusted data
 LR_cox_transmemb <- coxph(Surv(LR_Cox_time, 
-                               Late_rejection_status) ~ Mm_transmemb + 
+                               Late_rejection_status) ~ Mm_transm + 
                             R_sex + D_sex + R_age + D_age + 
                             Cold_ischemia_time_minutes +
                             Eplets_total_HLAI + Eplets_total_HLAII + 
