@@ -9,7 +9,8 @@ library(tidyverse)
 ### https://www.ensembl.org/info/docs/tools/vep/vep_formats.html#input
 
 ### Prerequisites:
-# 1) Folders data, src, results
+# 1) Folders data, Missense_variant_analyses_scripts, 
+#    Deletion_variant_analyses_scripts, results
 # 2) Foder data/Missense_variants
 # 3) Your genotype file "Your_genotype_data" in PLINK format (.bed, .bim, .fam) 
 # in data folder
@@ -50,7 +51,7 @@ Liver_Tx_cohort <- select(Liver_Tx_cohort, chr, start, end, allele, strand)
 
 # Structure of data
 str(Liver_Tx_cohort)
-# tibble [8,706,949 × 5] (S3: tbl_df/tbl/data.frame)
+# tibble [8,706,949 ? 5] (S3: tbl_df/tbl/data.frame)
 # $ chr   : num [1:8706949] 1 1 1 1 1 1 1 1 1 1 ...
 # $ start : num [1:8706949] 702040 722408 722583 722700 727151 ...
 # $ end   : num [1:8706949] 702040 722408 722583 722700 727151 ...
